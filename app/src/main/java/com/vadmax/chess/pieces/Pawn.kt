@@ -13,9 +13,15 @@ class Pawn(
     override fun moveDirections(): List<MoveDirection> {
         return if (side == Piece.Companion.Side.WHITE) listOf(
             MoveDirection(0, 1, 1),
+            MoveDirection(1, 1, 1),
+            MoveDirection(-1, 1, 1),
+            MoveDirection(0, 1, 2),
         )
         else listOf(
-            MoveDirection(0, -1, 1)
+            MoveDirection(0, -1, 1),
+            MoveDirection(1, -1, 1),
+            MoveDirection(-1, -1, 1),
+            MoveDirection(0, -1, 2)
         )
     }
 }

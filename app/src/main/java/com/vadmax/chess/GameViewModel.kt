@@ -107,30 +107,44 @@ class GameViewModel : ViewModel() {
         val currentPosition = selection!!.toCharArray()
         val checkingPos = CharArray(2)
         val piece = _board.value!![selection]!!
-        piece.moveDirections().forEach {
+        piece.moveDirections().forEach loop@{
             checkingPos[0] = currentPosition[0] + it.x
             checkingPos[1] = currentPosition[1] + it.y
-            var limit = 1
-            var pawnLimit = 0
+
             if (piece is Pawn) {
-                pawnLimit = if (piece.side == Piece.Companion.Side.WHITE && Character.getNumericValue(currentPosition[1]) == 2) 1
-                else if (piece.side == Piece.Companion.Side.BLACK && Character.getNumericValue(currentPosition[1]) == 7) 1
-                else 0
+                if (it.limit == 2) {
+                    if (piece.side == Piece.Companion.Side.WHITE && Character.getNumericValue(
+                            currentPosition[1]
+                        ) != 2
+                    ) {
+                        return@loop
+                    } else if (piece.side == Piece.Companion.Side.BLACK && Character.getNumericValue(
+                            currentPosition[1]
+                        ) != 7
+                    ) {
+                        return@loop
+                    }
+                }
             }
+
+            var limit = 1
             while (
                 checkingPos[0] in 'a'..'h' &&
                 Character.getNumericValue(checkingPos[1]) in 1..8 &&
-                limit <= it.limit + pawnLimit
+                limit <= it.limit
             ) {
                 val id = checkingPos[0].toString() + Character.getNumericValue(checkingPos[1])
                 if (_board.value!![id] != null) {
                     if (piece.side != _board.value!![id]!!.side) {
-                        availableMoves.add(id)
+                        if (piece is Pawn && it.x != 0 || piece !is Pawn) {
+                            availableMoves.add(id)
+                        }
                     }
-
                     break
                 } else {
-                    availableMoves.add(id)
+                    if (piece is Pawn && it.x == 0 || piece !is Pawn) {
+                        availableMoves.add(id)
+                    }
                 }
                 checkingPos[0] = checkingPos[0] + it.x
                 checkingPos[1] = checkingPos[1] + it.y
