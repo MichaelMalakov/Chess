@@ -47,7 +47,7 @@ class App : Application() {
 //        }
 //    }
 
-//    companion object {
-//        const val APP_TIME_PATTERN = "dd.MM.yyyy"
-//    }
+    companion object {
+        const val APP_PIECES_THEME = "standard"
+    }
 }

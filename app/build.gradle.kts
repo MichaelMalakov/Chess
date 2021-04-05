@@ -2,6 +2,9 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("kotlin-android-extensions")
+    kotlin("android")
+    kotlin("android.extensions")
+    kotlin("kapt")
 }
 
 val versionMajor = 0
@@ -56,4 +59,9 @@ dependencies {
 
     // Timber logger
     implementation("com.jakewharton.timber:timber:4.7.1")
+
+    // Images loader
+    val glideVersion = "4.11.0"
+    implementation("com.github.bumptech.glide:glide:$glideVersion")
+    kapt("com.github.bumptech.glide:compiler:$glideVersion")
 }
