@@ -43,28 +43,33 @@ class GameViewModel : ViewModel() {
     private val _move = MutableLiveData<Move>()
     val move: LiveData<Move>
         get() = _move
+
+    private var _gameOverText = SingleLiveEvent<String>()
+    val gameOverText: LiveData<String>
+        get() = _gameOverText
     
     private var selection: String? = null
 
     fun initBoard() {
-        _board.value = mutableMapOf()
+        val map: MutableMap<String, Piece?> = mutableMapOf()
         var letter = 'a'
         while (letter <= 'h') {
             for (num in 1..8) {
-                _board.value!!["$letter$num"] = null
+                map["$letter$num"] = null
             }
             letter++
         }
 
-        _board.value!!["e4"] = Rook(Piece.Companion.Side.WHITE)
-        _board.value!!["a1"] = Bishop(Piece.Companion.Side.WHITE)
-        _board.value!!["d7"] = King(Piece.Companion.Side.WHITE)
-        _board.value!!["d1"] = King(Piece.Companion.Side.BLACK)
-        //_board.value!!["f8"] = Queen(Piece.Companion.Side.WHITE)
-        _board.value!!["a2"] = Pawn(Piece.Companion.Side.WHITE)
-        _board.value!!["b7"] = Pawn(Piece.Companion.Side.BLACK)
-        _board.value!!["a7"] = Pawn(Piece.Companion.Side.BLACK)
-        _board.value!!["c7"] = Pawn(Piece.Companion.Side.BLACK)
+        map["f1"] = Rook(Piece.Companion.Side.WHITE)
+        map["a1"] = Bishop(Piece.Companion.Side.WHITE)
+        map["f7"] = King(Piece.Companion.Side.WHITE)
+        map["h7"] = King(Piece.Companion.Side.BLACK)
+        //map["f8"] = Queen(Piece.Companion.Side.WHITE)
+        map["a2"] = Pawn(Piece.Companion.Side.WHITE)
+        map["b7"] = Pawn(Piece.Companion.Side.BLACK)
+        map["a7"] = Pawn(Piece.Companion.Side.BLACK)
+        map["c7"] = Pawn(Piece.Companion.Side.BLACK)
+        _board.value = map.toMutableMap()
     }
 
     fun onClickEvent(id: String) {
@@ -93,10 +98,9 @@ class GameViewModel : ViewModel() {
                         _showPieceDialog.value = Piece.Companion.Side.BLACK
                     }
                 }
-
-                _move.value = Move(selection!!, id, piece)
                 _board.value!![id] = piece
                 _board.value!![selection!!] = null
+                _move.value = Move(selection!!, id, piece)
                 _clearSelection.value = selection!!
             } else if (piece != null && !getAvailableMoves().contains(id)) {
                 _cancelSelection.value = selection!!
@@ -194,21 +198,43 @@ class GameViewModel : ViewModel() {
         return false
     }
 
-    private fun isShahForSide(move: Move, side: Piece.Companion.Side): Boolean {
+    private fun isShahForSide(move: Move?, side: Piece.Companion.Side): Boolean {
         val checkBoard = _board.value!!.toMutableMap()
-        if (checkBoard[move.to] !is King) {
+        if (move != null && checkBoard[move.to] !is King) {
             checkBoard[move.from] = null
             checkBoard[move.to] = move.piece
         }
-        var isShah = false
+        var shah = false
         val kingPos = checkBoard.filterValues { it != null && it.side == side && it is King }.keys.elementAt(0)
-        checkBoard.filter { it.value != null && it.value!!.side != side }.forEach {
+        checkBoard.filterValues { it != null && it.side != side }.forEach {
             if (getAvailableMoves(true, it.key, checkBoard).contains(kingPos)) {
-                isShah = true
+                shah = true
                 return@forEach
             }
         }
 
-        return isShah
+        return shah
+    }
+
+    fun checkForCheckmateWin(side: Piece.Companion.Side) {
+        val opponentSide = if (side == Piece.Companion.Side.WHITE) Piece.Companion.Side.BLACK
+        else Piece.Companion.Side.WHITE
+
+        val shah = isShahForSide(null, opponentSide)
+
+        var canMove = false
+        board.value!!.filterValues { it != null && it.side == opponentSide }.forEach {
+            if (!canMove && getAvailableMoves(false, it.key).count() > 0) {
+                canMove = true
+            }
+        }
+
+        if (!canMove) {
+            if (shah) {
+                _gameOverText.value = side.side + " WON"
+            } else {
+                _gameOverText.value = "Draw"
+            }
+        }
     }
 }

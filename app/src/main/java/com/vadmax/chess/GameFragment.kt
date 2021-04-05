@@ -11,13 +11,12 @@ import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.vadmax.chess.pieces.Piece
 import kotlinx.android.synthetic.main.game_fragment.*
 
-class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener {
+class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener, EndGameDialog.DismissListener {
 
     private lateinit var viewModel: GameViewModel
     private val boardId = "square"
@@ -114,6 +113,7 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener {
         viewModel.move.observe(viewLifecycleOwner, {
             updateCell(it.from)
             updateCell(it.to, it.piece)
+            viewModel.checkForCheckmateWin(it.piece.side)
         })
 
         viewModel.showPieceDialog.observe(viewLifecycleOwner, {
@@ -121,6 +121,13 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener {
             val manager: FragmentManager = parentFragmentManager
             dialog.setTargetFragment(this, 0)
             dialog.show(manager, "Piece dialog")
+        })
+
+        viewModel.gameOverText.observe(viewLifecycleOwner, {
+            val dialog = EndGameDialog(it)
+            val manager: FragmentManager = parentFragmentManager
+            dialog.setTargetFragment(this, 0)
+            dialog.show(manager, "End game dialog")
         })
 
         viewModel.initBoard()
@@ -169,5 +176,9 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener {
 
     override fun selectPiece(piece: Piece) {
         viewModel.selectPiece(piece)
+    }
+
+    override fun dismiss() {
+        viewModel.initBoard()
     }
 }
