@@ -3,10 +3,8 @@ package com.vadmax.chess
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.vadmax.chess.pieces.Piece
-import com.vadmax.chess.pieces.Rook
+import com.vadmax.chess.pieces.*
 import com.vadmax.chess.util.SingleLiveEvent
-import timber.log.Timber
 
 class GameViewModel : ViewModel() {
 
@@ -51,7 +49,11 @@ class GameViewModel : ViewModel() {
         }
 
         _board.value!!["d4"] = Rook(Piece.Companion.Side.WHITE)
-        _board.value!!["d7"] = Rook(Piece.Companion.Side.WHITE)
+        _board.value!!["a1"] = Bishop(Piece.Companion.Side.WHITE)
+        _board.value!!["d7"] = King(Piece.Companion.Side.WHITE)
+        _board.value!!["e7"] = Queen(Piece.Companion.Side.WHITE)
+        _board.value!!["a2"] = Pawn(Piece.Companion.Side.WHITE)
+        _board.value!!["b7"] = Pawn(Piece.Companion.Side.BLACK)
     }
 
     fun onClickEvent(id: String) {
@@ -80,15 +82,22 @@ class GameViewModel : ViewModel() {
     private fun getAvailableMoves(): List<String> {
         val availableMoves = mutableListOf<String>()
         val currentPosition = selection!!.toCharArray()
-        var checkingPos = CharArray(2)
-        _board.value!![selection]!!.moveDirections().forEach {
+        val checkingPos = CharArray(2)
+        val piece = _board.value!![selection]!!
+        piece.moveDirections().forEach {
             checkingPos[0] = currentPosition[0] + it.x
             checkingPos[1] = currentPosition[1] + it.y
             var limit = 1
+            var pawnLimit = 0
+            if (piece is Pawn) {
+                pawnLimit = if (piece.side == Piece.Companion.Side.WHITE && Character.getNumericValue(currentPosition[1]) == 2) 1
+                else if (piece.side == Piece.Companion.Side.BLACK && Character.getNumericValue(currentPosition[1]) == 7) 1
+                else 0
+            }
             while (
                 checkingPos[0] in 'a'..'h' &&
                 Character.getNumericValue(checkingPos[1]) in 1..8 &&
-                limit <= it.limit
+                limit <= it.limit + pawnLimit
             ) {
                 val id = checkingPos[0].toString() + Character.getNumericValue(checkingPos[1])
                 if (_board.value!![id] != null) {
