@@ -78,6 +78,10 @@ class GameViewModel : ViewModel() {
             if (piece != null && getAvailableMoves().contains(id)) {
                 if (_board.value!![id] != null) {
                     _takenPiece.value = _board.value!![id]!!
+                } else if (move.value != null && isPassant(piece, id)) {
+                    _takenPiece.value = _board.value!![move.value!!.to]
+                    _board.value!![move.value!!.to] = null
+                    _clearSelection.value = move.value!!.to
                 }
 
                 if (piece is Pawn) {
@@ -141,6 +145,12 @@ class GameViewModel : ViewModel() {
                         }
                     }
                     break
+                } else if (move.value != null && isPassant(piece, id)) {
+                    if (piece.side == Piece.Companion.Side.WHITE && currentPosition[1] == '6') {
+                        availableMoves.add(id)
+                    } else if (piece.side == Piece.Companion.Side.BLACK && currentPosition[1] == '3') {
+                        availableMoves.add(id)
+                    }
                 } else {
                     if (piece is Pawn && it.x == 0 || piece !is Pawn) {
                         availableMoves.add(id)
@@ -153,6 +163,18 @@ class GameViewModel : ViewModel() {
         }
 
         return availableMoves
+    }
+
+    private fun isPassant(currentPiece: Piece, currentId: String): Boolean {
+        @Suppress("TYPE_INFERENCE_ONLY_INPUT_TYPES_WARNING")
+        if (currentPiece is Pawn && _board.value!![currentId] == null && move.value!!.piece.side != currentPiece.side &&
+            move.value!!.piece is Pawn && move.value!!.from[0] == currentId[0]) {
+            val length = Character.getNumericValue(move.value!!.from[1]) - Character.getNumericValue(move.value!!.to[1])
+            if (kotlin.math.abs(length) == 2) {
+                return true
+            }
+        }
+        return false
     }
 
     fun selectPiece(piece: Piece) {

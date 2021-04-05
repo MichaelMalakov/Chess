@@ -154,6 +154,8 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener {
                 .asBitmap()
                 .load(Uri.parse("file:///android_asset/" + "pieces/" + App.APP_PIECES_THEME + "/" + piece.image))
                 .into(cell)
+        } else {
+            cell.setImageResource(android.R.color.transparent)
         }
     }
 
