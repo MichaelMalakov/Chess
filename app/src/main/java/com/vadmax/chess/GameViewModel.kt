@@ -146,9 +146,9 @@ class GameViewModel : ViewModel() {
                     }
                     break
                 } else if (move.value != null && isPassant(piece, id)) {
-                    if (piece.side == Piece.Companion.Side.WHITE && currentPosition[1] == '6') {
+                    if (piece.side == Piece.Companion.Side.WHITE && currentPosition[1] == '5') {
                         availableMoves.add(id)
-                    } else if (piece.side == Piece.Companion.Side.BLACK && currentPosition[1] == '3') {
+                    } else if (piece.side == Piece.Companion.Side.BLACK && currentPosition[1] == '4') {
                         availableMoves.add(id)
                     }
                 } else {
