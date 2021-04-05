@@ -1,19 +1,23 @@
 package com.vadmax.chess
 
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.vadmax.chess.pieces.Piece
+import kotlinx.android.synthetic.main.game_fragment.*
 
-
-class GameFragment : Fragment() {
+class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener {
 
     private lateinit var viewModel: GameViewModel
     private val boardId = "square"
@@ -41,6 +45,19 @@ class GameFragment : Fragment() {
             letter++
         }
 
+        viewModel.takenPiece.observe(viewLifecycleOwner, {
+            val imageView = ImageView(requireContext())
+            imageView.layoutParams = LinearLayout.LayoutParams(50, 50) // value is in pixels
+            val stream =
+                requireActivity().assets.open("pieces/" + App.APP_PIECES_THEME + "/" + it.image)
+            val drawable = Drawable.createFromStream(stream, null)
+            imageView.setImageDrawable(drawable)
+            if (it.side == Piece.Companion.Side.WHITE) {
+                black_win_pieces.addView(imageView)
+            } else {
+                white_win_pieces.addView(imageView)
+            }
+        })
         viewModel.board.observe(viewLifecycleOwner, { board ->
             board.forEach {
                 updateCell(it.key, it.value)
@@ -49,13 +66,24 @@ class GameFragment : Fragment() {
 
         viewModel.clearSelection.observe(viewLifecycleOwner, {
             val cell = getCellById(it)
-            cell.setImageDrawable(ContextCompat.getDrawable(requireContext(), android.R.color.transparent))
-            cell.background = ContextCompat.getDrawable(requireContext(), android.R.color.transparent)
+            cell.setImageDrawable(
+                ContextCompat.getDrawable(
+                    requireContext(),
+                    android.R.color.transparent
+                )
+            )
+            cell.background = ContextCompat.getDrawable(
+                requireContext(),
+                android.R.color.transparent
+            )
         })
 
         viewModel.cancelSelection.observe(viewLifecycleOwner, {
             val cell = getCellById(it)
-            cell.background = ContextCompat.getDrawable(requireContext(), android.R.color.transparent)
+            cell.background = ContextCompat.getDrawable(
+                requireContext(),
+                android.R.color.transparent
+            )
         })
 
         viewModel.setSelection.observe(viewLifecycleOwner, {
@@ -66,20 +94,33 @@ class GameFragment : Fragment() {
         viewModel.showAvailableMoves.observe(viewLifecycleOwner, {
             it.forEach { id ->
                 val cell = getCellById(id)
-                cell.background = ContextCompat.getDrawable(requireContext(), R.drawable.ic_available_move_round)
+                cell.background = ContextCompat.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_available_move_round
+                )
             }
         })
 
         viewModel.clearAvailableMoves.observe(viewLifecycleOwner, {
-             it.forEach { id ->
+            it.forEach { id ->
                 val cell = getCellById(id)
-                cell.background = ContextCompat.getDrawable(requireContext(), android.R.color.transparent)
+                cell.background = ContextCompat.getDrawable(
+                    requireContext(),
+                    android.R.color.transparent
+                )
             }
         })
 
         viewModel.move.observe(viewLifecycleOwner, {
             updateCell(it.from)
             updateCell(it.to, it.piece)
+        })
+
+        viewModel.showPieceDialog.observe(viewLifecycleOwner, {
+            val dialog = SelectPieceDialog(it)
+            val manager: FragmentManager = parentFragmentManager
+            dialog.setTargetFragment(this, 0)
+            dialog.show(manager, "Piece dialog")
         })
 
         viewModel.initBoard()
@@ -123,4 +164,8 @@ class GameFragment : Fragment() {
             requireContext().packageName
         )
     )
+
+    override fun selectPiece(piece: Piece) {
+        viewModel.selectPiece(piece)
+    }
 }

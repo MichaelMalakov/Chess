@@ -7,6 +7,9 @@ class Queen(
     override val image: String
         get() = "Queen_" + side.side + ".png"
 
+    override val cost: Int
+        get() = 11
+
     override fun moveDirections(): List<MoveDirection> {
         return listOf(
             MoveDirection(1, 1, 8),

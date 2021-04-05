@@ -7,6 +7,9 @@ class King(
     override val image: String
         get() = "King_" + side.side + ".png"
 
+    override val cost: Int
+        get() = 0
+
     override fun moveDirections(): List<MoveDirection> {
         return listOf(
             MoveDirection(1, 1, 1),

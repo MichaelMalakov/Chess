@@ -4,6 +4,7 @@ interface Piece {
 
     val image: String
     val side: Side
+    val cost: Int
     fun moveDirections(): List<MoveDirection>
 
     companion object {

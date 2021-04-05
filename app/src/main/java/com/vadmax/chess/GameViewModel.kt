@@ -12,6 +12,14 @@ class GameViewModel : ViewModel() {
     val board: LiveData<MutableMap<String, Piece?>>
         get() = _board
 
+    private var _takenPiece = SingleLiveEvent<Piece>()
+    val takenPiece: LiveData<Piece>
+        get() = _takenPiece
+
+    private var _showPieceDialog = SingleLiveEvent<Piece.Companion.Side>()
+    val showPieceDialog: LiveData<Piece.Companion.Side>
+        get() = _showPieceDialog
+
     private var _setSelection = SingleLiveEvent<String>()
     val setSelection: LiveData<String>
         get() = _setSelection
@@ -54,6 +62,8 @@ class GameViewModel : ViewModel() {
         _board.value!!["e7"] = Queen(Piece.Companion.Side.WHITE)
         _board.value!!["a2"] = Pawn(Piece.Companion.Side.WHITE)
         _board.value!!["b7"] = Pawn(Piece.Companion.Side.BLACK)
+        _board.value!!["a7"] = Pawn(Piece.Companion.Side.BLACK)
+        _board.value!!["c7"] = Pawn(Piece.Companion.Side.BLACK)
     }
 
     fun onClickEvent(id: String) {
@@ -66,6 +76,19 @@ class GameViewModel : ViewModel() {
         } else {
             val piece = _board.value!![selection]
             if (piece != null && getAvailableMoves().contains(id)) {
+                if (_board.value!![id] != null) {
+                    _takenPiece.value = _board.value!![id]!!
+                }
+
+                if (piece is Pawn) {
+                    val line = Character.getNumericValue(id.toCharArray()[1])
+                    if (piece.side == Piece.Companion.Side.WHITE && line == 8) {
+                        _showPieceDialog.value = Piece.Companion.Side.WHITE
+                    } else if (piece.side == Piece.Companion.Side.BLACK && line == 1) {
+                        _showPieceDialog.value = Piece.Companion.Side.BLACK
+                    }
+                }
+
                 _move.value = Move(selection!!, id, piece)
                 _board.value!![id] = piece
                 _board.value!![selection!!] = null
@@ -101,6 +124,10 @@ class GameViewModel : ViewModel() {
             ) {
                 val id = checkingPos[0].toString() + Character.getNumericValue(checkingPos[1])
                 if (_board.value!![id] != null) {
+                    if (piece.side != _board.value!![id]!!.side) {
+                        availableMoves.add(id)
+                    }
+
                     break
                 } else {
                     availableMoves.add(id)
@@ -112,5 +139,11 @@ class GameViewModel : ViewModel() {
         }
 
         return availableMoves
+    }
+
+    fun selectPiece(piece: Piece) {
+        val id = _move.value!!.to
+        _board.value!![id] = piece
+        _move.value = Move(id, id, piece)
     }
 }

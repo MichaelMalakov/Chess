@@ -7,6 +7,9 @@ class Rook(
     override val image: String
         get() = "Rook_" + side.side + ".png"
 
+    override val cost: Int
+        get() = 5
+
     override fun moveDirections(): List<MoveDirection> {
         return listOf(
             MoveDirection(1, 0, 8),
