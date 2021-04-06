@@ -12,10 +12,6 @@ class GameViewModel : ViewModel() {
     val board: LiveData<MutableMap<String, Piece?>>
         get() = _board
 
-    private var _takenPiece = SingleLiveEvent<Piece>()
-    val takenPiece: LiveData<Piece>
-        get() = _takenPiece
-
     private var _showPieceDialog = SingleLiveEvent<Piece.Companion.Side>()
     val showPieceDialog: LiveData<Piece.Companion.Side>
         get() = _showPieceDialog
@@ -47,6 +43,10 @@ class GameViewModel : ViewModel() {
     private var _gameOverText = SingleLiveEvent<String>()
     val gameOverText: LiveData<String>
         get() = _gameOverText
+
+    private var _takenPieces = MutableLiveData<MutableList<Piece>>()
+    val takenPieces: LiveData<MutableList<Piece>>
+        get() = _takenPieces
     
     private var selection: String? = null
     private var castleOptions: Map<Piece.Companion.Side, MutableMap<String, Boolean?>> = getDefaultCastleParams()
@@ -99,6 +99,7 @@ class GameViewModel : ViewModel() {
         _board.value = map.toMutableMap()
         currentMove = Piece.Companion.Side.WHITE
         castleOptions = getDefaultCastleParams()
+        _takenPieces.value = mutableListOf()
     }
 
     fun onClickEvent(id: String) {
@@ -112,9 +113,11 @@ class GameViewModel : ViewModel() {
             val piece = _board.value!![selection]
             if (piece != null && getAvailableMoves().contains(id)) {
                 if (_board.value!![id] != null) {
-                    _takenPiece.value = _board.value!![id]!!
+                    _takenPieces.value!!.add(_board.value!![id]!!)
+                    _takenPieces.value = _takenPieces.value!!.toMutableList()
                 } else if (move.value != null && isPassant(piece, selection!![1], id)) {
-                    _takenPiece.value = _board.value!![move.value!!.to]
+                    _takenPieces.value!!.add(_board.value!![move.value!!.to]!!)
+                    _takenPieces.value = _takenPieces.value!!.toMutableList()
                     _board.value!![move.value!!.to] = null
                     _clearSelection.value = move.value!!.to
                 }
@@ -265,26 +268,33 @@ class GameViewModel : ViewModel() {
                 val id = checkingPos[0].toString() + Character.getNumericValue(checkingPos[1])
 
                 val canMove = if (!checkShah) !isShahForSide(Move(currentPosition, id, piece), piece.side) else true
-                if (canMove) {
-                    if (board[id] != null) {
-                        if (piece.side != board[id]!!.side) {
-                            if (piece is Pawn && it.x != 0 || piece !is Pawn) {
-                                if (checkShah || board[id]!! !is King) {
+                if (board[id] != null) {
+                    if (piece.side != board[id]!!.side) {
+                        if (piece is Pawn && it.x != 0 || piece !is Pawn) {
+                            if (checkShah || board[id]!! !is King) {
+                                if (canMove) {
                                     availableMoves.add(id)
                                 }
                             }
                         }
-                        break
-                    } else if (move.value != null && isPassant(piece, currentPosition[1], id)) {
+                    }
+
+                    break
+                } else if (move.value != null && isPassant(piece, currentPosition[1], id)) {
+                    if (canMove) {
                         availableMoves.add(id)
-                    } else if (piece is King && it.limit == 2) {
+                    }
+                } else if (piece is King && it.limit == 2) {
+                    if (canMove) {
                         if (it.x == -1 && castleOptions[piece.side]!![LONG] == true) {
                             availableMoves.add(id)
                         } else if (it.x == 1 && castleOptions[piece.side]!![SHORT] == true) {
                             availableMoves.add(id)
                         }
-                    } else {
-                        if (piece is Pawn && it.x == 0 || piece !is Pawn) {
+                    }
+                } else {
+                    if (piece is Pawn && it.x == 0 || piece !is Pawn) {
+                        if (canMove) {
                             availableMoves.add(id)
                         }
                     }

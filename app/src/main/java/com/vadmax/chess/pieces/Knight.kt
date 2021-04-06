@@ -1,14 +1,12 @@
 package com.vadmax.chess.pieces
 
 class Knight(
-    override val side: Piece.Companion.Side
+    override val side: Piece.Companion.Side,
+    override val cost: Int = 3
 ) : Piece {
 
     override val image: String
         get() = "Knight_" + side.side + ".png"
-
-    override val cost: Int
-        get() = 3
 
     override fun moveDirections(): List<MoveDirection> {
         return listOf(

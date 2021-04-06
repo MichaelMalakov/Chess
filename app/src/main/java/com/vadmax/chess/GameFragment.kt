@@ -1,5 +1,6 @@
 package com.vadmax.chess
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -8,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -28,6 +31,7 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener, En
         return inflater.inflate(R.layout.game_fragment, container, false)
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(GameViewModel::class.java)
@@ -44,26 +48,39 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener, En
             letter++
         }
 
-        viewModel.takenPiece.observe(viewLifecycleOwner, {
-            val imageView = ImageView(requireContext())
-            imageView.layoutParams = LinearLayout.LayoutParams(50, 50) // value is in pixels
-            val stream =
-                requireActivity().assets.open("pieces/" + App.APP_PIECES_THEME + "/" + it.image)
-            val drawable = Drawable.createFromStream(stream, null)
-            imageView.setImageDrawable(drawable)
-            if (it.side == Piece.Companion.Side.WHITE) {
-                black_win_pieces.addView(imageView)
-            } else {
-                white_win_pieces.addView(imageView)
+        viewModel.takenPieces.observe(viewLifecycleOwner, {
+            it.sortBy { piece -> piece.cost }
+            white_win_pieces.removeAllViews()
+            var sumWhite = 0
+            it.filter { piece -> piece.side == Piece.Companion.Side.WHITE }.forEach { piece ->
+                sumWhite += piece.cost
+                addTakenPiece(piece, white_win_pieces)
+            }
+
+            black_win_pieces.removeAllViews()
+            var sumBlack = 0
+            it.filter { piece -> piece.side == Piece.Companion.Side.BLACK }.forEach { piece ->
+                sumBlack += piece.cost
+                addTakenPiece(piece, black_win_pieces)
+            }
+
+            val textView = TextView(ContextThemeWrapper(requireContext(), R.style.score_label))
+            textView.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT) // value is in pixels
+            textView.setPadding(10, 0, 0, 0)
+            val difference = sumWhite - sumBlack
+            if (difference > 0) {
+                textView.text = "+$difference"
+                white_win_pieces.addView(textView)
+            } else if (difference < 0) {
+                textView.text = "+" + kotlin.math.abs(difference)
+                black_win_pieces.addView(textView)
             }
         })
+
         viewModel.board.observe(viewLifecycleOwner, { board ->
             board.forEach {
                 updateCell(it.key, it.value)
             }
-
-            black_win_pieces.removeAllViews()
-            white_win_pieces.removeAllViews()
         })
 
         viewModel.clearSelection.observe(viewLifecycleOwner, {
@@ -134,6 +151,16 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener, En
         })
 
         viewModel.initBoard()
+    }
+
+    private fun addTakenPiece(piece: Piece, view: LinearLayout) {
+        val imageView = ImageView(requireContext())
+        imageView.layoutParams = LinearLayout.LayoutParams(50, 50) // value is in pixels
+        val stream =
+                requireActivity().assets.open("pieces/" + App.APP_PIECES_THEME + "/" + piece.image)
+        val drawable = Drawable.createFromStream(stream, null)
+        imageView.setImageDrawable(drawable)
+        view.addView(imageView)
     }
 
     private fun updateCell(id: String, piece: Piece? = null) {

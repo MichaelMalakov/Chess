@@ -14,4 +14,9 @@
         <item name="android:windowExitAnimation">@anim/slide_out_right_to_left</item>
     </style>
 
+    <style name="score_label">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:fontFamily">@font/montserrat</item>
+    </style>
+
 </resources>

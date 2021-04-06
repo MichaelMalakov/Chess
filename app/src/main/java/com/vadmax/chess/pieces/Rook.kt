@@ -1,14 +1,12 @@
 package com.vadmax.chess.pieces
 
 class Rook(
-    override val side: Piece.Companion.Side
+    override val side: Piece.Companion.Side,
+    override val cost: Int = 5
 ) : Piece {
 
     override val image: String
         get() = "Rook_" + side.side + ".png"
-
-    override val cost: Int
-        get() = 5
 
     override fun moveDirections(): List<MoveDirection> {
         return listOf(

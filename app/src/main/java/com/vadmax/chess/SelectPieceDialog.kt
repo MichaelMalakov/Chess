@@ -39,15 +39,15 @@ class SelectPieceDialog(
         super.onViewCreated(view, savedInstanceState)
 
         if (side == Piece.Companion.Side.BLACK) {
-            setDrawableToImageView(Queen(Piece.Companion.Side.BLACK), dialog_queen)
-            setDrawableToImageView(Rook(Piece.Companion.Side.BLACK), dialog_rook)
-            setDrawableToImageView(Bishop(Piece.Companion.Side.BLACK), dialog_bishop)
-            setDrawableToImageView(Knight(Piece.Companion.Side.BLACK), dialog_knight)
+            setDrawableToImageView(Queen(Piece.Companion.Side.BLACK, 1), dialog_queen)
+            setDrawableToImageView(Rook(Piece.Companion.Side.BLACK, 1), dialog_rook)
+            setDrawableToImageView(Bishop(Piece.Companion.Side.BLACK, 1), dialog_bishop)
+            setDrawableToImageView(Knight(Piece.Companion.Side.BLACK, 1), dialog_knight)
         } else {
-            setDrawableToImageView(Queen(Piece.Companion.Side.WHITE), dialog_queen)
-            setDrawableToImageView(Rook(Piece.Companion.Side.WHITE), dialog_rook)
-            setDrawableToImageView(Bishop(Piece.Companion.Side.WHITE), dialog_bishop)
-            setDrawableToImageView(Knight(Piece.Companion.Side.WHITE), dialog_knight)
+            setDrawableToImageView(Queen(Piece.Companion.Side.WHITE, 1), dialog_queen)
+            setDrawableToImageView(Rook(Piece.Companion.Side.WHITE, 1), dialog_rook)
+            setDrawableToImageView(Bishop(Piece.Companion.Side.WHITE, 1), dialog_bishop)
+            setDrawableToImageView(Knight(Piece.Companion.Side.WHITE, 1), dialog_knight)
         }
     }
 
