@@ -19,7 +19,9 @@ class King(
             MoveDirection(1, 0, 1),
             MoveDirection(0, 1, 1),
             MoveDirection(-1, 0, 1),
-            MoveDirection(0, -1, 1)
+            MoveDirection(0, -1, 1),
+            MoveDirection(1, 0, 2),
+            MoveDirection(-1, 0, 2),
         )
     }
 }
