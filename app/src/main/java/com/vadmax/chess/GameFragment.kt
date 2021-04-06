@@ -61,6 +61,9 @@ class GameFragment : Fragment(), SelectPieceDialog.SelectPieceDialogListener, En
             board.forEach {
                 updateCell(it.key, it.value)
             }
+
+            black_win_pieces.removeAllViews()
+            white_win_pieces.removeAllViews()
         })
 
         viewModel.clearSelection.observe(viewLifecycleOwner, {
